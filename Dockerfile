@@ -1,34 +1,19 @@
-FROM docker:stable
+From diteresa/dind
 
-# A few reasons for installing distribution-provided OpenJDK:
-#
-#  1. Oracle.  Licensing prevents us from redistributing the official JDK.
-#
-#  2. Compiling OpenJDK also requires the JDK to be installed, and it gets
-#     really hairy.
-#
-#     For some sample build times, see Debian's buildd logs:
-#       https://buildd.debian.org/status/logs.php?pkg=openjdk-8
+ENV JAVA_HOME /opt/openjdk-13
+ENV PATH $JAVA_HOME/bin:$PATH
 
-# Default to UTF-8 file.encoding
-ENV LANG C.UTF-8
+# https://jdk.java.net/
+ENV JAVA_VERSION 13-ea+27
+ENV JAVA_URL https://download.java.net/java/early_access/alpine/27/binaries/openjdk-13-ea+27_linux-x64-musl_bin.tar.gz
+ENV JAVA_SHA256 c733a5e2833f3942e7c9be546a6a4d0951e58f09d39adc0f856820d810f9d910
+# "For Alpine Linux, builds are produced on a reduced schedule and may not be in sync with the other platforms."
 
-# add a simple script that can auto-detect the appropriate JAVA_HOME value
-# based on whether the JDK or only the JRE is installed
-RUN { \
-		echo '#!/bin/sh'; \
-		echo 'set -e'; \
-		echo; \
-		echo 'dirname "$(dirname "$(readlink -f "$(which javac || which java)")")"'; \
-	} > /usr/local/bin/docker-java-home \
-	&& chmod +x /usr/local/bin/docker-java-home
-ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk
-ENV PATH $PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin
-
-ENV JAVA_VERSION 8u191
-ENV JAVA_ALPINE_VERSION 8.191.12-r0
-
-RUN set -x \
-	&& apk add --no-cache \
-		openjdk8="$JAVA_ALPINE_VERSION" \
-	&& [ "$JAVA_HOME" = "$(docker-java-home)" ]
+RUN set -eux; \
+	\
+	wget -O /openjdk.tgz "$JAVA_URL"; \
+	echo "$JAVA_SHA256 */openjdk.tgz" | sha256sum -c -; \
+	mkdir -p "$JAVA_HOME"; \
+	tar --extract --file /openjdk.tgz --directory "$JAVA_HOME" --strip-components 1; \
+	rm /openjdk.tgz; \
+	\

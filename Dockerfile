@@ -1,4 +1,4 @@
-From diteresa/dind
+From docker:stable
 
 ENV JAVA_HOME /opt/openjdk-13
 ENV PATH $JAVA_HOME/bin:$PATH

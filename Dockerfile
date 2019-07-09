@@ -1,19 +1,7 @@
+From adoptopenjdk/openjdk12 AS build
 From docker:stable
 
-ENV JAVA_HOME /opt/openjdk-13
-ENV PATH $JAVA_HOME/bin:$PATH
-
-# https://jdk.java.net/
-ENV JAVA_VERSION 13-ea+27
-ENV JAVA_URL https://download.java.net/java/early_access/alpine/27/binaries/openjdk-13-ea+27_linux-x64-musl_bin.tar.gz
-ENV JAVA_SHA256 c733a5e2833f3942e7c9be546a6a4d0951e58f09d39adc0f856820d810f9d910
-# "For Alpine Linux, builds are produced on a reduced schedule and may not be in sync with the other platforms."
-
-RUN set -eux; \
-	\
-	wget -O /openjdk.tgz "$JAVA_URL"; \
-	echo "$JAVA_SHA256 */openjdk.tgz" | sha256sum -c -; \
-	mkdir -p "$JAVA_HOME"; \
-	tar --extract --file /openjdk.tgz --directory "$JAVA_HOME" --strip-components 1; \
-	rm /openjdk.tgz; \
-	\
+Copy --from=build /opt/java/openjdk /opt/java/openjdk
+ENV JAVA_HOME=/opt/java/openjdk \
+    PATH="/opt/java/openjdk/bin:$PATH"
+CMD ["jshell"]
